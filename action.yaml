@@ -53,7 +53,13 @@ runs:
       run: |
         Write-Host "Authenticating in realm: ${{ inputs.REALM }}..."
         $authUrl = "https://idm.stackspot.com/${{ inputs.REALM }}/oidc/oauth/token"
-        $response = Invoke-RestMethod -Method Post -Uri $authUrl -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body @{ client_id = "${{ inputs.CLIENT_ID }}" grant_type = "client_credentials" client_secret = "${{ inputs.CLIENT_KEY }}" }
+        $response = Invoke-RestMethod -Method Post -Uri $authUrl -Headers @{
+          "Content-Type" = "application/x-www-form-urlencoded"
+        } -Body @{
+          client_id = "${{ inputs.CLIENT_ID }}";
+          grant_type = "client_credentials";
+          client_secret = "${{ inputs.CLIENT_KEY }}"
+        }
         if (-not $response.access_token) {
           Write-Host "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and REALM."
           exit 1
