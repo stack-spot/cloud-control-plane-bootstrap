@@ -80,71 +80,7 @@ runs:
         fi
         mkdir -p "$DOWNLOAD_PATH"
         echo "Using URL: $FULL_URL"
-        echo "Downloading to: $DOWNLOAD_PATH"    echo "Downloading ZIP file..."
-        FULL_URL="https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
-        DOWNLOAD_PATH="${{ inputs.DOWNLOAD_FOLDER }}"
-        if [ -z "$DOWNLOAD_PATH" ]; then
-          DOWNLOAD_PATH="$GITHUB_WORKSPACE"
-        fi
-        mkdir -p "$DOWNLOAD_PATH"
-        echo "Using URL: $FULL_URL"
         echo "Downloading to: $DOWNLOAD_PATH"
-
-        # Extract the domain from the URL
-        DOMAIN=$(echo "$FULL_URL" | awk -F[/:] '{print $4}')
-        echo "Extracted domain: $DOMAIN"
-
-        # Check DNS resolution
-        echo "Checking DNS resolution for domain: $DOMAIN"
-        if ! nslookup "$DOMAIN" > /dev/null 2>&1; then
-          echo "❌ DNS resolution failed for domain: $DOMAIN"
-          echo "Please check if the domain is correct and reachable."
-          exit 6
-        fi
-        echo "✅ DNS resolution successful for domain: $DOMAIN"
-
-        # Check network connectivity
-        echo "Checking network connectivity to domain: $DOMAIN"
-        if ! ping -c 3 "$DOMAIN" > /dev/null 2>&1; then
-          echo "❌ Network connectivity test failed for domain: $DOMAIN"
-          echo "Please check your network connection or firewall settings."
-          exit 6
-        fi
-        echo "✅ Network connectivity test successful for domain: $DOMAIN"
-
-        # Perform the download and capture the response
-        RESPONSE=$(curl -s -w "%{http_code}" -X GET "$FULL_URL" \
-          -H "Authorization: Bearer $ACCESS_TOKEN" \
-          -o "$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip")
-        CURL_EXIT_CODE=$?
-
-        # Check if curl succeeded
-        if [ $CURL_EXIT_CODE -ne 0 ]; then
-          echo "❌ curl failed with exit code $CURL_EXIT_CODE"
-          case $CURL_EXIT_CODE in
-            6) echo "❌ Could not resolve host. Please check the FULL_URL: $FULL_URL" ;;
-            7) echo "❌ Failed to connect to host. Please check your network connection." ;;
-            28) echo "❌ Operation timed out. Please check the server or your network." ;;
-            *) echo "❌ An unknown error occurred with curl. Exit code: $CURL_EXIT_CODE" ;;
-          esac
-          exit $CURL_EXIT_CODE
-        fi
-
-        # Check the HTTP response code
-        if [ "$RESPONSE" -ne 200 ]; then
-          echo "❌ Failed to download ZIP file. HTTP response code: $RESPONSE"
-          echo "Please check the FULL_URL: $FULL_URL and ensure it is correct."
-          exit 1
-        fi
-
-        # Verify the file exists
-        if [ ! -f "$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" ]; then
-          echo "❌ ZIP file was not downloaded successfully. Please check the server response."
-          exit 1
-        fi
-
-        echo "✅ ZIP file downloaded successfully"
-        echo "ZIP_PATH=$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" >> $GITHUB_ENV
 
         # Extract the domain from the URL
         DOMAIN=$(echo "$FULL_URL" | awk -F[/:] '{print $4}')
