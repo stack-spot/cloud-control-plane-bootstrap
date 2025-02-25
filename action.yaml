@@ -1,0 +1,103 @@
+name: "Cloud Control Plane Bootstrap"
+
+description: "Authenticates and downloads a StackSpot CloudControl Plane bootstrap module"
+
+inputs:
+  CLIENT_KEY:
+    description: "Client Key for authentication"
+    required: true
+  CLIENT_ID:
+    description: "Client ID for authentication"
+    required: true
+  REALM:
+    description: "Realm for authentication"
+    required: true
+  VERSION:
+    description: "Version of the bootstrap file to download (default: latest)"
+    required: false
+    default: "latest"
+  DOWNLOAD_FOLDER:
+    description: "Folder where the ZIP file will be downloaded (default: GITHUB_WORKSPACE)"
+    required: false
+
+outputs:
+  ZIP_PATH:
+    description: "Path to the downloaded ZIP file"
+
+runs:
+  using: "composite"
+  steps:
+    # Step 1: Authenticate and retrieve the access token
+    - name: Authenticate and retrieve access token (Linux/MacOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        echo "Authenticating in realm: ${{ inputs.REALM }}..."
+        AUTH_URL="https://idm.stackspot.com/${{ inputs.REALM }}/oidc/oauth/token"
+        TOKEN=$(curl --silent --location \
+          --request POST "$AUTH_URL" \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode "client_id=${{ inputs.CLIENT_ID }}" \
+          --data-urlencode "grant_type=client_credentials" \
+          --data-urlencode "client_secret=${{ inputs.CLIENT_KEY }}" | jq -r '.access_token')
+        if [ -z "$TOKEN" ]; then
+          echo "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and REALM."
+          exit 1
+        fi
+        echo "✅ Authentication successful"
+        echo "ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+    - name: Authenticate and retrieve access token (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        Write-Host "Authenticating in realm: ${{ inputs.REALM }}..."
+        $authUrl = "https://idm.stackspot.com/${{ inputs.REALM }}/oidc/oauth/token"
+        $response = Invoke-RestMethod -Method Post -Uri $authUrl -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body @{ client_id = "${{ inputs.CLIENT_ID }}" grant_type = "client_credentials" client_secret = "${{ inputs.CLIENT_KEY }}" }
+        if (-not $response.access_token) {
+          Write-Host "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and REALM."
+          exit 1
+        }
+        Write-Host "✅ Authentication successful"
+        echo "ACCESS_TOKEN=$($response.access_token)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+
+    # Step 2: Download the bootstrap ZIP file
+    - name: Download bootstrap ZIP file (Linux/MacOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        echo "Downloading ZIP file..."
+        FULL_URL="https://cloud-platform-horizon.prd.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
+        DOWNLOAD_PATH="${{ inputs.DOWNLOAD_FOLDER }}"
+        if [ -z "$DOWNLOAD_PATH" ]; then
+          DOWNLOAD_PATH="$GITHUB_WORKSPACE"
+        fi
+        mkdir -p "$DOWNLOAD_PATH"
+        curl -s -X GET "$FULL_URL" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
+          -o "$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip"
+        if [ ! -f "$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" ]; then
+          echo "❌ Failed to download ZIP file from $FULL_URL"
+          exit 1
+        fi
+        echo "✅ ZIP file downloaded successfully"
+        echo "ZIP_PATH=$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" >> $GITHUB_ENV
+
+    - name: Download bootstrap ZIP file (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        Write-Host "Downloading ZIP file..."
+        $fullUrl = "https://cloud-platform-horizon.prd.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
+        $downloadPath = "${{ inputs.DOWNLOAD_FOLDER }}"
+        if (-not $downloadPath) {
+          $downloadPath = "$env:GITHUB_WORKSPACE"
+        }
+        New-Item -ItemType Directory -Force -Path $downloadPath
+        Invoke-RestMethod -Method Get -Uri $fullUrl -Headers @{ "Authorization" = "Bearer $env:ACCESS_TOKEN" } -OutFile "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip"
+        if (-not (Test-Path "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip")) {
+          Write-Host "❌ Failed to download ZIP file from $fullUrl"
+          exit 1
+        }
+        Write-Host "✅ ZIP file downloaded successfully"
+        echo "ZIP_PATH=$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
