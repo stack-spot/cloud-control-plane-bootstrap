@@ -9,7 +9,7 @@ inputs:
   CLIENT_ID:
     description: "Client ID for authentication"
     required: true
-  REALM:
+  CLIENT_REALM:
     description: "Realm for authentication"
     required: true
   VERSION:
@@ -32,8 +32,8 @@ runs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        echo "Authenticating in realm: ${{ inputs.REALM }}..."
-        AUTH_URL="https://idm.stackspot.com/${{ inputs.REALM }}/oidc/oauth/token"
+        echo "Authenticating in realm: ${{ inputs.CLIENT_REALM }}..."
+        AUTH_URL="https://idm.stackspot.com/${{ inputs.CLIENT_REALM }}/oidc/oauth/token"
         TOKEN=$(curl --silent --location \
           --request POST "$AUTH_URL" \
           --header 'Content-Type: application/x-www-form-urlencoded' \
@@ -41,7 +41,7 @@ runs:
           --data-urlencode "grant_type=client_credentials" \
           --data-urlencode "client_secret=${{ inputs.CLIENT_KEY }}" | jq -r '.access_token')
         if [ -z "$TOKEN" ]; then
-          echo "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and REALM."
+          echo "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and CLIENT_REALM."
           exit 1
         fi
         echo "✅ Authentication successful"
@@ -51,8 +51,8 @@ runs:
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        Write-Host "Authenticating in realm: ${{ inputs.REALM }}..."
-        $authUrl = "https://idm.stackspot.com/${{ inputs.REALM }}/oidc/oauth/token"
+        Write-Host "Authenticating in realm: ${{ inputs.CLIENT_REALM }}..."
+        $authUrl = "https://idm.stackspot.com/${{ inputs.CLIENT_REALM }}/oidc/oauth/token"
         $response = Invoke-RestMethod -Method Post -Uri $authUrl -Headers @{
           "Content-Type" = "application/x-www-form-urlencoded"
         } -Body @{
@@ -61,7 +61,7 @@ runs:
           client_secret = "${{ inputs.CLIENT_KEY }}"
         }
         if (-not $response.access_token) {
-          Write-Host "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and REALM."
+          Write-Host "❌ Authentication failed. Please check your CLIENT_KEY, CLIENT_ID, and CLIENT_REALM."
           exit 1
         }
         Write-Host "✅ Authentication successful"
@@ -73,7 +73,7 @@ runs:
       shell: bash
       run: |
         echo "Downloading ZIP file..."
-        FULL_URL="https://cloud-platform-horizon.prd.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
+        FULL_URL="https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
         DOWNLOAD_PATH="${{ inputs.DOWNLOAD_FOLDER }}"
         if [ -z "$DOWNLOAD_PATH" ]; then
           DOWNLOAD_PATH="$GITHUB_WORKSPACE"
@@ -94,7 +94,7 @@ runs:
       shell: powershell
       run: |
         Write-Host "Downloading ZIP file..."
-        $fullUrl = "https://cloud-platform-horizon.prd.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
+        $fullUrl = "https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
         $downloadPath = "${{ inputs.DOWNLOAD_FOLDER }}"
         if (-not $downloadPath) {
           $downloadPath = "$env:GITHUB_WORKSPACE"

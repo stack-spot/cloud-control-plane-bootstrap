@@ -22,7 +22,7 @@ To get the account keys (`CLIENT_ID`, `CLIENT_KEY` and `CLIENT_REALM`), please l
         with:
           CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          REALM: ${{ secrets.CLIENT_REALM }}
+          CLIENT_REALM: ${{ secrets.CLIENT_REALM }}
           VERSION: "latest" # Optional, defaults to "latest"
           DOWNLOAD_FOLDER: "./downloads"
       - name: Verify bootstrap ZIP file
