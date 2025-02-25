@@ -22,8 +22,8 @@ jobs:
         with:
           CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_REALM: ${{ secrets.CLIENT_REALM }}
-          VERSION: "latest" # Optional, defaults to "latest"
+          CLIENT_REALM: 'stackspot'
+          VERSION: 'latest'
           DOWNLOAD_FOLDER: "./downloads"
 
       - name: Verify bootstrap ZIP file
