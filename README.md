@@ -17,7 +17,6 @@ To get the account keys (`CLIENT_ID`, `CLIENT_KEY` and `CLIENT_REALM`), please l
       - name: Checkout repository
         uses: actions/checkout@v4.2.1
       - name: Download control plane bootstrap ZIP file
-        id: download
         uses: stack-spot/cloud-control-plane-bootstrap@v1
         with:
           CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
