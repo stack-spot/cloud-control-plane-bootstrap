@@ -107,6 +107,7 @@ runs:
         # Perform the download and capture the response
         RESPONSE=$(curl -s -w "%{http_code}" -X GET "$FULL_URL" \
           -H "Authorization: Bearer $ACCESS_TOKEN" \
+          -H 'accept: application/octet-stream' \
           -o "$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip")
         CURL_EXIT_CODE=$?
 
@@ -149,10 +150,50 @@ runs:
           $downloadPath = "$env:GITHUB_WORKSPACE"
         }
         New-Item -ItemType Directory -Force -Path $downloadPath
-        Invoke-RestMethod -Method Get -Uri $fullUrl -Headers @{ "Authorization" = "Bearer $env:ACCESS_TOKEN" } -OutFile "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip"
-        if (-not (Test-Path "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip")) {
+
+        # Extract the domain from the URL
+        $domain = ($fullUrl -split '/')[2]
+        Write-Host "Extracted domain: $domain"
+
+        # Check DNS resolution
+        Write-Host "Checking DNS resolution for domain: $domain"
+        try {
+          Resolve-DnsName -Name $domain -ErrorAction Stop | Out-Null
+          Write-Host "✅ DNS resolution successful for domain: $domain"
+        } catch {
+          Write-Host "❌ DNS resolution failed for domain: $domain"
+          Write-Host "Please check if the domain is correct and reachable."
+          exit 6
+        }
+
+        # Check network connectivity
+        Write-Host "Checking network connectivity to domain: $domain"
+        try {
+          Test-Connection -ComputerName $domain -Count 3 -ErrorAction Stop | Out-Null
+          Write-Host "✅ Network connectivity test successful for domain: $domain"
+        } catch {
+          Write-Host "❌ Network connectivity test failed for domain: $domain"
+          Write-Host "Please check your network connection or firewall settings."
+          exit 6
+        }
+
+        # Perform the download
+        try {
+          Invoke-RestMethod -Method Get -Uri $fullUrl -Headers @{
+            "Authorization" = "Bearer $env:ACCESS_TOKEN"
+            "accept" = "application/octet-stream"
+          } -OutFile "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip"
+        } catch {
           Write-Host "❌ Failed to download ZIP file from $fullUrl"
+          Write-Host $_.Exception.Message
           exit 1
         }
+
+        # Verify the file exists
+        if (-not (Test-Path "$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip")) {
+          Write-Host "❌ ZIP file was not downloaded successfully. Please check the server response."
+          exit 1
+        }
+
         Write-Host "✅ ZIP file downloaded successfully"
         echo "ZIP_PATH=$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
