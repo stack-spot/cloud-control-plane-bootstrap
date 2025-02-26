@@ -1,6 +1,6 @@
 # cloud-control-plane-bootstrap
 
-Github Action to download Stackspot cloud control plane bootstrap module.
+Github Action to download Stackspot cloud control plane bootstrap terraform module.
 
 _**Note**: This action is supported on all runners operating systems (`ubuntu`, `macos`, `windows`)_
 
@@ -25,8 +25,11 @@ To get the account keys (`CLIENT_ID`, `CLIENT_KEY` and `CLIENT_REALM`), please l
           VERSION: "latest" # Optional
 ```
 
-The bootstrap zip file will then be available at path `$GITHUB_WORKSPACE/control_plane_bootstrap_${{ inputs.VERSION }}.zip`
-(e.g: $GITHUB_WORKSPACE/control_plane_bootstrap_latest.zip)
+After running the action, the control plane bootstrap ZIP file will then be available at path:
+
+`$GITHUB_WORKSPACE/control_plane_bootstrap_${{ inputs.VERSION }}.zip`
+
+_Example: $GITHUB_WORKSPACE/control_plane_bootstrap_latest.zip_
 
 * * *
 
