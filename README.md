@@ -23,12 +23,7 @@ To get the account keys (`CLIENT_ID`, `CLIENT_KEY` and `CLIENT_REALM`), please l
           CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_REALM: ${{ secrets.CLIENT_REALM }}
-          VERSION: "latest" # Optional, defaults to "latest"
-          DOWNLOAD_FOLDER: "./downloads"
-      - name: Verify bootstrap ZIP file
-        run: |
-          echo "Downloaded ZIP file path: ${{ steps.download.outputs.ZIP_PATH }}"
-        shell: bash
+          VERSION: "latest" # Optional
 ```
 
 * * *
@@ -41,13 +36,6 @@ Field | Mandatory | Default Value | Observation
 **CLIENT_KEY** | YES | N/A |[StackSpot](https://stackspot.com/en/settings/access-token) Client KEY.
 **CLIENT_REALM** | YES | N/A |[StackSpot](https://stackspot.com/en/settings/access-token) Client Realm.
 **VERSION** | NO | `latest` | Bootstrap version.
-**DOWNLOAD_FOLDER** | NO | `GITHUB_WORKSPACE` | Folder when the boostrap zip file will be downloaded.
-
-## ▶️ Action output
-
-Field | Observation
------------- | ------------
-**ZIP_PATH** | Path to the downloaded ZIP file.
 
 * * *
 

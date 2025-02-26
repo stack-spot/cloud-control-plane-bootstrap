@@ -17,10 +17,6 @@ inputs:
     required: false
     default: "latest"
 
-outputs:
-  ZIP_PATH:
-    description: "Path to the downloaded ZIP file"
-
 runs:
   using: "composite"
   steps:
@@ -111,8 +107,7 @@ runs:
           exit 1
         fi
 
-        echo "✅ ZIP file downloaded successfully"
-        echo "ZIP_PATH=$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" >> $GITHUB_OUTPUT
+        echo "✅ ZIP file downloaded successfully at path: $DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip"
 
     - name: Download bootstrap ZIP file (Windows)
       if: runner.os == 'Windows'
@@ -144,5 +139,4 @@ runs:
           exit 1
         }
 
-        Write-Host "✅ ZIP file downloaded successfully"
-        echo "ZIP_PATH=$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
+        Write-Host "✅ ZIP file downloaded successfully at path: $downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip"
