@@ -25,6 +25,9 @@ To get the account keys (`CLIENT_ID`, `CLIENT_KEY` and `CLIENT_REALM`), please l
           VERSION: "latest" # Optional
 ```
 
+The bootstrap zip file will then be available at path `$GITHUB_WORKSPACE/control_plane_bootstrap_${{ inputs.VERSION }}.zip`
+(e.g: $GITHUB_WORKSPACE/control_plane_bootstrap_latest.zip)
+
 * * *
 
 ## ▶️ Action Inputs
