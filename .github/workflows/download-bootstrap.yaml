@@ -1,0 +1,30 @@
+name: Download control plane bootstrap
+
+on:
+  workflow_dispatch:
+
+jobs:
+  control-plane-bootstrap:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.1
+
+      - name: Download control plane bootstrap ZIP file
+        id: download
+        uses: ./
+        with:
+          CLIENT_KEY: ${{ secrets.CLIENT_KEY }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_REALM: 'stackspot'
+          VERSION: 'latest'
+
+      - name: Verify bootstrap ZIP file
+        run: |
+          echo "Downloaded ZIP file path: ${{ steps.download.outputs.ZIP_PATH }}"
+          ls -lha
+        shell: bash
