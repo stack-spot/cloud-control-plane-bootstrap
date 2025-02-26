@@ -24,7 +24,6 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_REALM: 'stackspot'
           VERSION: 'latest'
-          DOWNLOAD_FOLDER: "downloads"
 
       - name: Verify bootstrap ZIP file
         run: |

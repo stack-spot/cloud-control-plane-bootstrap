@@ -16,9 +16,6 @@ inputs:
     description: "Version of the bootstrap file to download (default: latest)"
     required: false
     default: "latest"
-  DOWNLOAD_FOLDER:
-    description: "Folder where the ZIP file will be downloaded (default: GITHUB_WORKSPACE)"
-    required: false
 
 outputs:
   ZIP_PATH:
@@ -74,11 +71,7 @@ runs:
       run: |
         echo "Downloading bootstrap ZIP file..."
         FULL_URL="https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
-        DOWNLOAD_PATH="${{GITHUB.WORKSPACE}}/${{ inputs.DOWNLOAD_FOLDER }}"
-        if [ -z "$DOWNLOAD_PATH" ]; then
-          DOWNLOAD_PATH="$GITHUB_WORKSPACE"
-        fi
-        mkdir -p "$DOWNLOAD_PATH"
+        DOWNLOAD_PATH=$GITHUB_WORKSPACE
         echo "Using URL: $FULL_URL"
         echo "Downloading to: $DOWNLOAD_PATH"
 
@@ -119,7 +112,7 @@ runs:
         fi
 
         echo "✅ ZIP file downloaded successfully"
-        echo "ZIP_PATH=$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" >> $GITHUB_ENV
+        echo "ZIP_PATH=$DOWNLOAD_PATH/control_plane_bootstrap_${{ inputs.VERSION }}.zip" >> $GITHUB_OUTPUT
 
     - name: Download bootstrap ZIP file (Windows)
       if: runner.os == 'Windows'
@@ -127,11 +120,7 @@ runs:
       run: |
         Write-Host "Downloading bootstrap ZIP file..."
         $fullUrl = "https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
-        $downloadPath = "${{GITHUB.WORKSPACE}}\${{ inputs.DOWNLOAD_FOLDER }}"
-        if (-not $downloadPath) {
-          $downloadPath = "$env:GITHUB_WORKSPACE"
-        }
-        New-Item -ItemType Directory -Force -Path $downloadPath
+        $downloadPath = "$env:GITHUB_WORKSPACE"
 
         # Extract the domain from the URL
         $domain = ($fullUrl -split '/')[2]
@@ -156,4 +145,4 @@ runs:
         }
 
         Write-Host "✅ ZIP file downloaded successfully"
-        echo "ZIP_PATH=$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        echo "ZIP_PATH=$downloadPath\control_plane_bootstrap_${{ inputs.VERSION }}.zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8
