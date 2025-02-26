@@ -72,7 +72,7 @@ runs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        echo "Downloading ZIP file..."
+        echo "Downloading bootstrap ZIP file..."
         FULL_URL="https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
         DOWNLOAD_PATH="${{ inputs.DOWNLOAD_FOLDER }}"
         if [ -z "$DOWNLOAD_PATH" ]; then
@@ -142,7 +142,7 @@ runs:
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        Write-Host "Downloading ZIP file..."
+        Write-Host "Downloading bootstrap ZIP file..."
         $fullUrl = "https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
         $downloadPath = "${{ inputs.DOWNLOAD_FOLDER }}"
         if (-not $downloadPath) {
