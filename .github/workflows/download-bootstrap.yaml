@@ -2,8 +2,6 @@ name: Download control plane bootstrap
 
 on:
   workflow_dispatch:
-  push:
-    branches: [test]
 
 jobs:
   control-plane-bootstrap:
