@@ -74,7 +74,7 @@ runs:
       run: |
         echo "Downloading bootstrap ZIP file..."
         FULL_URL="https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
-        DOWNLOAD_PATH="${{ inputs.DOWNLOAD_FOLDER }}"
+        DOWNLOAD_PATH="${{GITHUB.WORKSPACE}}/${{ inputs.DOWNLOAD_FOLDER }}"
         if [ -z "$DOWNLOAD_PATH" ]; then
           DOWNLOAD_PATH="$GITHUB_WORKSPACE"
         fi
@@ -85,24 +85,6 @@ runs:
         # Extract the domain from the URL
         DOMAIN=$(echo "$FULL_URL" | awk -F[/:] '{print $4}')
         echo "Extracted domain: $DOMAIN"
-
-        # Check DNS resolution
-        echo "Checking DNS resolution for domain: $DOMAIN"
-        if ! nslookup "$DOMAIN" > /dev/null 2>&1; then
-          echo "❌ DNS resolution failed for domain: $DOMAIN"
-          echo "Please check if the domain is correct and reachable."
-          exit 6
-        fi
-        echo "✅ DNS resolution successful for domain: $DOMAIN"
-
-        # Check network connectivity
-        echo "Checking network connectivity to domain: $DOMAIN"
-        if ! ping -c 3 "$DOMAIN" > /dev/null 2>&1; then
-          echo "❌ Network connectivity test failed for domain: $DOMAIN"
-          echo "Please check your network connection or firewall settings."
-          exit 6
-        fi
-        echo "✅ Network connectivity test successful for domain: $DOMAIN"
 
         # Perform the download and capture the response
         RESPONSE=$(curl -s -w "%{http_code}" -X GET "$FULL_URL" \
@@ -145,7 +127,7 @@ runs:
       run: |
         Write-Host "Downloading bootstrap ZIP file..."
         $fullUrl = "https://cloud-platform-horizon.stackspot.com/v1/organizations/bootstrap?version=${{ inputs.VERSION }}"
-        $downloadPath = "${{ inputs.DOWNLOAD_FOLDER }}"
+        $downloadPath = "${{GITHUB.WORKSPACE}}\${{ inputs.DOWNLOAD_FOLDER }}"
         if (-not $downloadPath) {
           $downloadPath = "$env:GITHUB_WORKSPACE"
         }
@@ -154,28 +136,6 @@ runs:
         # Extract the domain from the URL
         $domain = ($fullUrl -split '/')[2]
         Write-Host "Extracted domain: $domain"
-
-        # Check DNS resolution
-        Write-Host "Checking DNS resolution for domain: $domain"
-        try {
-          Resolve-DnsName -Name $domain -ErrorAction Stop | Out-Null
-          Write-Host "✅ DNS resolution successful for domain: $domain"
-        } catch {
-          Write-Host "❌ DNS resolution failed for domain: $domain"
-          Write-Host "Please check if the domain is correct and reachable."
-          exit 6
-        }
-
-        # Check network connectivity
-        Write-Host "Checking network connectivity to domain: $domain"
-        try {
-          Test-Connection -ComputerName $domain -Count 3 -ErrorAction Stop | Out-Null
-          Write-Host "✅ Network connectivity test successful for domain: $domain"
-        } catch {
-          Write-Host "❌ Network connectivity test failed for domain: $domain"
-          Write-Host "Please check your network connection or firewall settings."
-          exit 6
-        }
 
         # Perform the download
         try {
