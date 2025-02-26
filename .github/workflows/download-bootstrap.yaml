@@ -28,6 +28,5 @@ jobs:
       - name: Verify bootstrap ZIP file
         run: |
           echo "Downloaded ZIP file path: ${{ steps.download.outputs.ZIP_PATH }}"
-          cd ~/downloads
           ls -lha
         shell: bash
